@@ -67,6 +67,11 @@ MVP 固定最低阵容：
 - `minimax`
 - `gemini`
 
+状态枚举约定：
+
+- `agents[].status` 允许值：`active`、`timeout`、`degraded`、`absent`、`offline`
+- `artifacts.round_outputs[].status` 允许值：`pending`、`writing`、`written`、`failed`、`timeout`
+
 落盘原则：
 
 - 原始日志先落 `.raw.log`
@@ -281,10 +286,12 @@ MVP 固定最低阵容：
 ## 关键字段解释
 
 - `agents`：参会 agent 列表。所有文档统一使用 `agents` 字段名。
+- `agents[].status`：agent 当前可用状态。建议仅使用 `active`、`timeout`、`degraded`、`absent`、`offline` 五个枚举值，避免自由文本。
 - `mode`：会议模式，取值为 `light`、`standard`、`deep`。
 - `min_agents`：允许继续开会的最少人数，MVP 固定为 `3`。
 - `positions`：保存每个 agent 当前立场，而不是只保存原始发言。
 - `artifacts`：保存本次会议的材料包、轮次输出、总结和决议文件路径，保证可恢复与可归档。
+- `artifacts.round_outputs[].status`：单份轮次产物的写入状态。建议仅使用 `pending`、`writing`、`written`、`failed`、`timeout` 五个枚举值。
 - `disagreements`：必须显式记录分歧归属，防止“看起来都同意”。
 - `controversy.score`：争议度，范围建议为 `0` 到 `1`。
 - `new_substantive_disagreement`：本轮是否真的产生了新的实质性分歧。

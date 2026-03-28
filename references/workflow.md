@@ -63,6 +63,14 @@
 5. 初始化 `.ai-council/state.json`
 6. 把主持人准备过程简要记录到 `.ai-council/orchestration-log.md`
 
+可直接执行的初始化示例：
+
+```bash
+MEETING_DIR=$(mktemp -d /tmp/ai-council-XXXXXX) && cd "$MEETING_DIR" && git init
+mkdir -p .ai-council/raw rounds decisions archives
+touch .ai-council/meeting-prompt.md .ai-council/orchestration-log.md .ai-council/state.json
+```
+
 初始化完成后，主持人至少要确认：
 
 - 当前目录是 git repo
