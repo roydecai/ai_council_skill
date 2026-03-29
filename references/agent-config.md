@@ -268,6 +268,12 @@ process(action: send-keys, keys: ["C-c"])
 - **非搜索型议题**：exec timeout 300s
 - Codex 响应较慢，通常 2-5 分钟才有完整输出
 
+最小等待时间（2026-03-29 新增）：
+- **每轮 agent 输出最少等待 10 分钟**，不要提前 kill 或超时中断
+- `process(action: poll, timeout: 600000)` 作为默认轮询超时
+- 仅在以下情况可提前终止：agent 明确报错、进程僵死（CPU 0% 超过 2 分钟）、或用户明确要求终止
+- 如果 poll 超时但进程仍在运行，继续用更长的 poll 等待，不要直接 kill
+
 踩坑：
 
 1. 必须在 git repo 中运行，否则拒绝执行。临时目录需要 `mktemp + git init`
@@ -335,19 +341,18 @@ gemini -y 2>&1 | ~/.openclaw/scripts/clean-ansi.sh
 # 1. 杀掉本次会议启动的后台进程（记录在会议状态对象 pids 字段中）
 for pid in $MEETING_PIDS; do kill $pid 2>/dev/null; done
 
-# 2. 清理临时工作目录（归档后清理）
-rm -rf /tmp/ai-council-<meeting-id>
+# 2. 清理会议工作目录（归档后清理）
+#    通用讨论：~/.openclaw/workspace/AI_Discussion/<YYYYMMDD>-<topic-slug>/
+#    项目讨论：<project-dir>/ai-council/<YYYYMMDD>-<topic-slug>/
+rm -rf "$MEETING_DIR"
 
 # 3. Kimi session 处理
 #    - 持久 session（如 -S ai-council-opc-20260328）：保留，供后续续接或复盘
 #    - 一次性 session（未指定 -S）：无需额外清理，Kimi 自动管理
 
 # 4. 归档状态文件（会议正式结束后归档，不要在会议中途清理）
-ARCHIVE_DIR=~/.openclaw/workspace/memory/council-archives/<meeting-id>/
-mkdir -p "$ARCHIVE_DIR"
-cp /tmp/ai-council-<meeting-id>/state.json "$ARCHIVE_DIR/state.json"
-# 如果有 agent 输出文件，也一并归档
-cp /tmp/ai-council-<meeting-id>/*.md "$ARCHIVE_DIR/" 2>/dev/null
+#    通用讨论 → memory/reviews/
+#    项目讨论 → 项目归档目录
 
 # 5. 验证：确认无残留进程
 ps aux | grep -E 'kimi|codex|gemini' | grep -v grep || echo "无残留进程"

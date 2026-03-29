@@ -28,11 +28,33 @@
   - 主持人轮次总结
 - 会议过程中不得只依赖 PTY 滚屏或 session 历史，必须把关键内容写入工作目录。
 
-## 二、会议目录初始化
+## 二、工作目录机制
 
-目标：建立本次会议的最小可运行工作区，保证后续调用、持久化、归档和恢复都有统一落点。
+### 2.1 两种会议类型对应两种目录策略
 
-推荐目录结构：
+| 会议类型 | 工作目录 | 说明 |
+|----------|----------|------|
+| **通用讨论**（脑爆、话题分析、决策讨论） | `~/.openclaw/workspace/AI_Discussion/` | 固定目录，所有非项目讨论共用 |
+| **项目讨论**（涉及具体项目的实现/架构/调试） | 该项目的实际项目文件夹 | 直接在项目目录下操作 |
+
+#### 通用讨论目录
+
+- 路径：`~/.openclaw/workspace/AI_Discussion/`
+- 已初始化 git repo，可直接使用
+- **过程材料**（state.json、agent 原始输出等）可暂存于此
+- **落地内容**（决议、方案文档等）默认输出到 `memory/reviews/` 或用户指定位置，**不留在本目录**
+- 除非用户明确要求，否则讨论结束后清理过程文件
+- 每次讨论使用子目录区分：`AI_Discussion/<YYYYMMDD>-<topic-slug>/`
+
+#### 项目讨论目录
+
+- 直接使用项目的实际工作目录
+- 无需额外初始化（项目目录通常已是 git repo）
+- 落地内容留在项目中，按项目归档规则处理
+
+### 2.2 会议子目录初始化
+
+无论哪种类型，每次会议都需要在工作目录下创建专属子目录：
 
 ```text
 <meeting-dir>/
@@ -54,26 +76,26 @@
 └── archives/
 ```
 
-初始化步骤：
-
-1. 创建临时工作目录，例如 `mktemp -d /tmp/ai-council-XXXXXX`
-2. 进入目录并执行 `git init`
-3. 创建 `.ai-council/`、`.ai-council/raw/`、`rounds/`、`decisions/`
-4. 写入 `meeting-prompt.md`
-5. 初始化 `.ai-council/state.json`
-6. 把主持人准备过程简要记录到 `.ai-council/orchestration-log.md`
-
-可直接执行的初始化示例：
+初始化命令：
 
 ```bash
-MEETING_DIR=$(mktemp -d /tmp/ai-council-XXXXXX) && cd "$MEETING_DIR" && git init
-mkdir -p .ai-council/raw rounds decisions archives
-touch .ai-council/meeting-prompt.md .ai-council/orchestration-log.md .ai-council/state.json
+# 通用讨论
+MEETING_DIR=~/.openclaw/workspace/AI_Discussion/$(date +%Y%m%d)-<topic-slug>
+
+# 项目讨论
+MEETING_DIR=/path/to/project/ai-council/$(date +%Y%m%d)-<topic-slug>
+
+# 通用初始化（两种类型共用）
+mkdir -p "$MEETING_DIR"/{.ai-council/raw,rounds,decisions,archives}
+touch "$MEETING_DIR"/.ai-council/{state.json,meeting-prompt.md,orchestration-log.md}
+cd "$MEETING_DIR"
 ```
 
-初始化完成后，主持人至少要确认：
+如果工作目录不是 git repo，需执行 `git init`。
 
-- 当前目录是 git repo
+### 2.3 初始化检查清单
+
+- 当前目录是 git repo（Codex 强制要求）
 - `state.json` 已存在且可读
 - 参会 agent 已确定
 - 会议模式已确定
@@ -406,6 +428,16 @@ MVP 推荐超时阈值：
 - `decisions/final-resolution.md`
 - `decisions/executive-summary.md`
 
+**强制规则：决议生成后必须立即发送给用户。**
+
+执行方式：
+1. 决议文件写入后，立即通过 Telegram 或飞书发送 `executive-summary.md` 全文
+2. 附上 `final-resolution.md` 的归档路径（Obsidian 或 workspace 路径）
+3. 不得只归档不发送，不得等用户追问才提供
+4. 发送完成后在 `state.json` 中记录 `decision.delivered_at` 和 `decision.delivered_to`
+
+⚠️ 历史教训（LRN-20260328-005）：MVP v1 和 v2 均遗漏了这一步，用户需要主动追问才知道结果。这是主持人职责的一部分，不是可选项。
+
 分歧处理规则：
 
 - 高重要性分歧：在完整决议和决议摘要中都体现。
@@ -429,8 +461,8 @@ MVP 推荐超时阈值：
 
 执行要点：
 
-- 项目制会议归档到项目文件夹。
-- 非项目会议按上下文选择合适位置。
+- 项目讨论：归档到项目文件夹。
+- 通用讨论：落地内容输出到 `memory/reviews/`（或用户指定位置），**不留在 AI_Discussion 目录**。清理 AI_Discussion 中的过程文件。
 - 命名参考：`YYYYMMDD_council_主题.md`
 - 命名风格遵循 Obsidian 文档治理规范。
 - 同步到 Obsidian，并保留可分享链接或引用路径。

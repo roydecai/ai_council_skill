@@ -26,8 +26,14 @@ MVP 固定最低阵容：
 
 ## 状态文件位置建议
 
-- 临时运行态：`./.ai-council/state.json`
-- 归档快照：`./archives/YYYYMMDD_council_主题.state.json`
+- 临时运行态：`./.ai-council/state.json`（会议子目录内）
+- 通用讨论归档：`memory/reviews/YYYYMMDD_council_主题_resolution.md`
+- 项目讨论归档：按项目归档规则处理
+
+工作目录说明：
+- **通用讨论**：`~/.openclaw/workspace/AI_Discussion/<YYYYMMDD>-<topic-slug>/`
+- **项目讨论**：项目实际目录下的 `ai-council/<YYYYMMDD>-<topic-slug>/`
+- 详细规则见 `workflow.md` §2.1
 
 如果没有文件系统落点，也至少要在主持人的上下文中保留一份最新状态对象。
 
