@@ -75,7 +75,7 @@ MVP 固定最低阵容：
 
 状态枚举约定：
 
-- `agents[].status` 允许值：`active`、`timeout`、`degraded`、`absent`、`offline`
+- `agents[].status` 允许值：`active`、`timeout`、`degraded`、`absent`、`offline`、`failed`
 - `artifacts.round_outputs[].status` 允许值：`pending`、`writing`、`written`、`failed`、`timeout`
 
 落盘原则：
@@ -84,6 +84,51 @@ MVP 固定最低阵容：
 - 清洗后的可读正文再落 `rounds/`
 - 主持人必须在更新 `state.json` 前确认本轮文件已写入
 - 不得以“终端里看过了”替代文件落盘
+
+## 最小初始化模板
+
+主持人创建会议时，直接复制以下模板并填入对应字段：
+
+```json
+{
+  "protocol_version": "ai-council.state.v1",
+  "meeting": {
+    "id": "council-YYYYMMDD-topic-slug",
+    "topic": "会议主题",
+    "type": "project|general",
+    "mode": "light|standard|deep",
+    "status": "preparing",
+    "created_at": "YYYY-MM-DDTHH:MM:SS+08:00",
+    "updated_at": "YYYY-MM-DDTHH:MM:SS+08:00",
+    "host": "皮皮",
+    "min_agents": 3,
+    "boundary": {
+      "in_scope": [],
+      "out_of_scope": [],
+      "focus": []
+    }
+  },
+  "agents": [],
+  "materials": { "summary": "", "key_files": [], "evidence": [] },
+  "artifacts": {
+    "meeting_prompt": ".ai-council/meeting-prompt.md",
+    "state_file": ".ai-council/state.json",
+    "round_outputs": [],
+    "round_summaries": [],
+    "decisions": { "full": "", "summary": "" }
+  },
+  "round": { "current": 0, "max_rounds": 3, "history": [] },
+  "positions": {},
+  "consensus": [],
+  "disagreements": [],
+  "open_questions": [],
+  "controversy": { "score": 0, "level": "low", "new_substantive_disagreement": false },
+  "next_step": { "action": "initialize" },
+  "decision": { "summary": "", "unresolved": [] }
+}
+```
+
+`workflow.md` 中的初始化命令应改为复制此模板而非 `touch` 空文件。
 
 ## 生命周期
 
@@ -292,7 +337,7 @@ MVP 固定最低阵容：
 ## 关键字段解释
 
 - `agents`：参会 agent 列表。所有文档统一使用 `agents` 字段名。
-- `agents[].status`：agent 当前可用状态。建议仅使用 `active`、`timeout`、`degraded`、`absent`、`offline` 五个枚举值，避免自由文本。
+- `agents[].status`：agent 当前可用状态。建议仅使用 `active`、`timeout`、`degraded`、`absent`、`offline`、`failed` 六个枚举值，避免自由文本。其中 `failed` 表示调用失败且无法恢复，触发降级人数判断。
 - `mode`：会议模式，取值为 `light`、`standard`、`deep`。
 - `min_agents`：允许继续开会的最少人数，MVP 固定为 `3`。
 - `positions`：保存每个 agent 当前立场，而不是只保存原始发言。

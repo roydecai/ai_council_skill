@@ -1,0 +1,36 @@
+{
+  "protocol_version": "ai-council.state.v1",
+  "meeting": {
+    "id": "council-YYYYMMDD-topic-slug",
+    "topic": "会议主题",
+    "type": "project|general",
+    "mode": "light|standard|deep",
+    "status": "preparing",
+    "created_at": "YYYY-MM-DDTHH:MM:SS+08:00",
+    "updated_at": "YYYY-MM-DDTHH:MM:SS+08:00",
+    "host": "皮皮",
+    "min_agents": 3,
+    "boundary": {
+      "in_scope": [],
+      "out_of_scope": [],
+      "focus": []
+    }
+  },
+  "agents": [],
+  "materials": { "summary": "", "key_files": [], "evidence": [] },
+  "artifacts": {
+    "meeting_prompt": ".ai-council/meeting-prompt.md",
+    "state_file": ".ai-council/state.json",
+    "round_outputs": [],
+    "round_summaries": [],
+    "decisions": { "full": "", "summary": "" }
+  },
+  "round": { "current": 0, "max_rounds": 3, "history": [] },
+  "positions": {},
+  "consensus": [],
+  "disagreements": [],
+  "open_questions": [],
+  "controversy": { "score": 0, "level": "low", "new_substantive_disagreement": false },
+  "next_step": { "action": "initialize" },
+  "decision": { "summary": "", "unresolved": [] }
+}

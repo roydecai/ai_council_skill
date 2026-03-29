@@ -87,7 +87,8 @@ MEETING_DIR=/path/to/project/ai-council/$(date +%Y%m%d)-<topic-slug>
 
 # 通用初始化（两种类型共用）
 mkdir -p "$MEETING_DIR"/{.ai-council/raw,rounds,decisions,archives}
-touch "$MEETING_DIR"/.ai-council/{state.json,meeting-prompt.md,orchestration-log.md}
+cp ~/.openclaw/workspace/skills/ai-council/references/state-initial.json "$MEETING_DIR/.ai-council/state.json"
+touch "$MEETING_DIR"/.ai-council/{meeting-prompt.md,orchestration-log.md}
 cd "$MEETING_DIR"
 ```
 
